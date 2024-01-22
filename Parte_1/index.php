@@ -138,6 +138,7 @@
 
           for ($i = 0; $i < count($this->respuestas); $i++) {
             if ($respuestasUsuario[$i] === $this->respuestas[$i]) {
+
               $puntuacion++;
             } else {
               $this->respuestasIncorrectas[] = $i + 1;
