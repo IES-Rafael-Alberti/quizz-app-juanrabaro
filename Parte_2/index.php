@@ -38,18 +38,20 @@
 			while ($row = $result->fetch_assoc()) {
 				$idQuestion = $row["question_id"];
 				$textQuestion = $row["question_text"];
-				$queryOptions = "SELECT * FROM Options WHERE Questions_question_id = $idQuestion";
 
-					<p>". $count .". " . $textQuestion . "</p>
-					<label><input type='radio' name='q$count' value='$answer_choice'> ".$answer_choice.") Página de inicio personal</label>
-					<label><input type='radio' name='q$count' value='$answer_choice'> ".$answer_choice.") PHP: Procesador de hipertexto</label>
-					<label><input type='radio' name='q$count' value='$answer_choice'> ".$answer_choice.") Procesador de hipervínculos privados</label>
-					<label><input type='radio' name='q$count' value='$answer_choice'> ".$answer_choice.") Página de enlace PHP</label>
+				$queryOptions = "SELECT * FROM Options WHERE Questions_question_id = $idQuestion";
+				$resultOptions = $conn->query($queryOptions);
+				while ($row = $resultOptions->fetch_assoc()) {
+					if ($count === 1) {
+						echo "<p>". $count .". " . $textQuestion . "</p>";
+					}
+					echo "<label><input type='radio' name='q$count' value='.$row[answer_choice].'> ".$row["answer_choice"].") ". $row["option_text"] ."</label>";
 					$count++;
 				}
-			} else {
-				echo "No se encontraron resultados.";
 			}
+		} else {
+			echo "No se encontraron resultados.";
+		}
 			
 			// Cerrar conexión
 			$conn->close();
