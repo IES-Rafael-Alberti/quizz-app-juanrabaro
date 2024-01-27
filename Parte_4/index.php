@@ -10,7 +10,10 @@
 	<!-- <form method="post" action="process.php"> -->
 	<form method="post">
 		<h1>PHP Quiz PARTE 4</h1>
-
+		<br>
+		BASICAMENTE HACER CONTROL DE USUARIOS, INICIAR SESIÓN, REGISTRARSE, CERRAR SESIÓN, MANTENER SESIÓN ACTIVA CREO
+		<br>
+		<br>
 		<?php
 		// Datos de conexión a la base de datos
 		$servername = "db";
