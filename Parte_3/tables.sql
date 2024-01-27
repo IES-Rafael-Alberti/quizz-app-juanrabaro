@@ -9,14 +9,16 @@ CREATE TABLE IF NOT EXISTS `quiz`.`Questions` (
   `question_id` INT NOT NULL AUTO_INCREMENT,
   `question_type` VARCHAR(50) NOT NULL,
   `question_details` VARCHAR(50) NULL,
+  `question_text` VARCHAR(250) NOT NULL,
   PRIMARY KEY (`question_id`),
   UNIQUE INDEX `question_id_UNIQUE` (`question_id` ASC) VISIBLE);
 
 CREATE TABLE IF NOT EXISTS `quiz`.`Options` (
   `option_id` INT NOT NULL AUTO_INCREMENT,
-  `question_id_options` VARCHAR(50) NOT NULL,
+  -- `question_id_options` VARCHAR(50) NOT NULL,
   `correct_answer` TINYINT NOT NULL,
   `option_type` VARCHAR(50) NOT NULL,
+  `option_text` VARCHAR(50) NOT NULL,
   `answer_choice` VARCHAR(50) NOT NULL,
   `Questions_question_id` INT NOT NULL,
   PRIMARY KEY (`option_id`, `Questions_question_id`),
