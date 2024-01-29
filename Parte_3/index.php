@@ -490,65 +490,68 @@
 			$respuesta4 = $_POST['respuesta4'];
 			$respuestaCorrecta = $_POST['respuestaCorrecta'];
 
-			if ( !in_array($respuestaCorrecta, ["a", "b", "c", "d"]) ) {
-				echo "<h2>Respuesta incorrecta, solo se permite a, b, c o d</h2>";
-				return;
+			if (!in_array($respuestaCorrecta, ["a", "b", "c", "d"])) {
+					echo "<h2>Respuesta incorrecta, solo se permite a, b, c o d</h2>";
+					return;
 			}
 
 			$solucion1 = 0;
 			$solucion2 = 0;
 			$solucion3 = 0;
 			$solucion4 = 0;
+
 			if ($respuestaCorrecta === "a") {
-				$solucion1 = 1;
+					$solucion1 = 1;
 			} else if ($respuestaCorrecta === "b") {
-				$solucion2 = 1;
+					$solucion2 = 1;
 			} else if ($respuestaCorrecta === "c") {
-				$solucion3 = 1;
+					$solucion3 = 1;
 			} else if ($respuestaCorrecta === "d") {
-				$solucion4 = 1;
+					$solucion4 = 1;
 			}
 
-			$consulta1 = "INSERT INTO Questions (question_type, question_text) 
-										VALUES ('one_choice', ' $pregunta ');";
+			$consulta1 = "INSERT INTO Questions (question_type, question_text) VALUES ('one_choice', ?)";
 
 			$stmt1 = $conn->prepare($consulta1);
 			$stmt1->bind_param("s", $pregunta);
+
 			if ($stmt1->execute()) {
-				echo "<h2>Elemento creado! Refresca la página para ver los cambios</h2>";
+					echo "<h2>Elemento creado! Refresca la página para ver los cambios</h2>";
+
+					$queryQuestionsCrear = "SELECT * FROM Questions";
+					$resultQuestionsCrear = $conn->query($queryQuestionsCrear);
+
+					if ($resultQuestionsCrear->num_rows > 0) {
+							while ($row = $resultQuestionsCrear->fetch_assoc()) {
+									if ($row['question_text'] === $pregunta) {
+											echo "<h2>{$row['question_id']}</h2>";
+											$idUltimaPregunta = $row['question_id'];
+									}
+							}
+					}
+					echo "<p>". $idUltimaPregunta ."</p>";
+					$consulta2 = "INSERT INTO Options (correct_answer, option_type, answer_choice, Questions_question_id, option_text)
+											VALUES ($solucion1, 'one_choice', 'a', $idUltimaPregunta, '$respuesta1'),
+														($solucion2, 'one_choice', 'b', $idUltimaPregunta, '$respuesta2'),
+														($solucion3, 'one_choice', 'c', $idUltimaPregunta, '$respuesta3'),
+														($solucion4, 'one_choice', 'd', $idUltimaPregunta, '$respuesta4')";
+
+					$stmt2 = $conn->prepare($consulta2);
+					$stmt2->bind_param("iisiisiisiis", $solucion1, $idUltimaPregunta, $respuesta1, $solucion2, $idUltimaPregunta, $respuesta2, $solucion3, $idUltimaPregunta, $respuesta3, $solucion4, $idUltimaPregunta, $respuesta4);
+
+					if ($stmt2->execute()) {
+							// echo "<h2>Elemento creado! Refresca la página para ver los cambios</h2>";
+					} else {
+							echo "Error al insertar opciones2: " . $stmt2->error;
+					}
+
+					$stmt2->close();
 			} else {
-				echo "Error al insertar pregunta: " . $stmt1->error;
+					echo "Error al insertar pregunta: " . $stmt1->error;
 			}
+
 			$stmt1->close();
 
-			$queryQuestionsCrear = "SELECT * FROM Questions";
-			$resultQuestionsCrear = $conn->query($queryQuestionsCrear);
-
-			if ($resultQuestionsCrear-> num_rows>0) {
-				while ($row = $resultQuestionsCrear->fetch_assoc()) {
-					if ($row['question_text'] === $pregunta) {
-						echo "<h2>$row[question_id]</h2>";
-						$idUltimaPregunta = $row['question_id'];
-					}
-				}
-			}
-
-			$consulta2 = "INSERT INTO Options (correct_answer, option_type, answer_choice, Questions_question_id, option_text)
-										VALUES ( $solucion1 , 'one_choice', 'a',  $idUltimaPregunta , ' $respuesta1 '),
-													( $solucion2 , 'one_choice', 'b',  $idUltimaPregunta , ' $respuesta2 '),
-													( $solucion3 , 'one_choice', 'c',  $idUltimaPregunta , ' $respuesta3 '),
-													( $solucion4 , 'one_choice', 'd',  $idUltimaPregunta , ' $respuesta4 ');";
-			
-			$stmt2 = $conn->prepare($consulta2);
-			$stmt2->bind_param("iiiiissss", $solucion1, $solucion2, $solucion3, $solucion4, $idUltimaPregunta, $respuesta1, $respuesta2, $respuesta3, $respuesta4);
-
-			if($stmt2->execute()) {
-					// echo "<h2>Elemento creado! Refresca la página para ver los cambios</h2>";
-			} else {
-        echo "Error al insertar opciones2: " . $stmt2->error;
-    	}
-
-			$stmt2->close();
 		}
 	}
 
