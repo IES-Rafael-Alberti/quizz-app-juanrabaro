@@ -250,7 +250,7 @@
 
 	<form method="post" class="form-borrar" name="borrar">
 		<h2>Borrar</h2>
-		<select name="selectBorrar" style="width: 80%;">
+		<select name="selectBorrar" style="width: 80%; background-color: white;">
 			<?php
 				$servername = "db";
 				$username = "root";
@@ -281,7 +281,7 @@
 
 	<form method="post" name="editar">
 		<h2>Editar</h2>
-		<select name="selectEditar" style="width: 80%;">
+		<select name="selectEditar" style="width: 80%; background-color: white;">
 			<?php
 				$servername = "db";
 				$username = "root";
@@ -417,6 +417,7 @@
 			$stmt->close();
 			
 		} else if (isset($_POST["editar"])) {
+			echo "<h1>Pregunta Actualizada</h1>";
 			$idValorSeleccionadoEditar = $_POST['selectEditar'];
 			$preguntaEditar = $_POST['pregunta'];
 			$respuestaEditar1 = $_POST['respuesta1'];
@@ -431,15 +432,21 @@
 			// 	echo "<br>";
 			// }
 
-			$queryOptions = "SELECT * FROM Options";
-			$resultOptions = $conn->query($queryOptions);
+			$queryOptionsAntiguaRespuesta = "SELECT * FROM Options";
+			$resultOptionsAntiguaRespuesta = $conn->query($queryOptionsAntiguaRespuesta);
 			$antiguaRespuestaCorrecta = "";
-
-			if ($resultQuestions-> num_rows>0) {
-				while ($row = $resultQuestions->fetch_assoc()) {
-					echo "<p>". $row["question_text"] ."</p>";
-					if ($row["question_id"] == $idValorSeleccionadoEditar && $row["correct_answer"] == 1) {
-						$antiguaRespuestaCorrecta = $row["answer_choice"];
+			
+			if ($resultOptionsAntiguaRespuesta-> num_rows>0) {
+				while ($row = $resultOptionsAntiguaRespuesta->fetch_assoc()) {
+					// echo "<p> Questions_question_id". $row["Questions_question_id"] ."</p>";
+					// echo "<p>idValorSeleccionadoEditar: ". $idValorSeleccionadoEditar ."</p>";
+					if ($row["Questions_question_id"] === $idValorSeleccionadoEditar) {
+						// echo "<p>ids iguales</p>";
+						// echo "<p> correct_answer". $row["correct_answer"] ."</p>";
+						if ($row["correct_answer"] === "1") {
+							$antiguaRespuestaCorrecta = $row["answer_choice"];
+							// echo "<p>Antigua respuesta correcta: ". $antiguaRespuestaCorrecta ."</p>";
+						}
 					}
 				}
 			}
@@ -483,6 +490,7 @@
 
 
 		} else if (isset($_POST["crear"])) {
+			echo "<h1>Pregunta Creada</h1>";
 			$pregunta = $_POST['pregunta'];
 			$respuesta1 = $_POST['respuesta1'];
 			$respuesta2 = $_POST['respuesta2'];
@@ -524,12 +532,12 @@
 					if ($resultQuestionsCrear->num_rows > 0) {
 							while ($row = $resultQuestionsCrear->fetch_assoc()) {
 									if ($row['question_text'] === $pregunta) {
-											echo "<h2>{$row['question_id']}</h2>";
+											// echo "<h2>{$row['question_id']}</h2>";
 											$idUltimaPregunta = $row['question_id'];
 									}
 							}
 					}
-					echo "<p>". $idUltimaPregunta ."</p>";
+					// echo "<p>". $idUltimaPregunta ."</p>";
 					$consulta2 = "INSERT INTO Options (correct_answer, option_type, answer_choice, Questions_question_id, option_text)
 											VALUES ($solucion1, 'one_choice', 'a', $idUltimaPregunta, '$respuesta1'),
 														($solucion2, 'one_choice', 'b', $idUltimaPregunta, '$respuesta2'),
