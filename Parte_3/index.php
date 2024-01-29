@@ -391,7 +391,6 @@
 
 	if ($resultQuestions-> num_rows>0) {
 		while ($row = $resultQuestions->fetch_assoc()) {
-			$idUltimaPregunta = $row["question_id"];
 			// echo "<p>". $row["question_text"] ."</p>";
 		}
 	}
@@ -418,7 +417,6 @@
 			$stmt->close();
 			
 		} else if (isset($_POST["editar"])) {
-			echo "<h1>Pregunta Editada</h1>";
 			$idValorSeleccionadoEditar = $_POST['selectEditar'];
 			$preguntaEditar = $_POST['pregunta'];
 			$respuestaEditar1 = $_POST['respuesta1'];
@@ -426,22 +424,65 @@
 			$respuestaEditar3 = $_POST['respuesta3'];
 			$respuestaEditar4 = $_POST['respuesta4'];
 			$respuestaCorrectaEditar = $_POST['respuestaCorrecta'];
+			
 			// foreach ($_POST as $key => $value) {
 			// 	echo "Nombre del campo: " . htmlspecialchars($key) . "<br>";
 			// 	echo "Valor del campo: " . htmlspecialchars($value) . "<br>";
 			// 	echo "<br>";
 			// }
-			$consultaPregunta = "UPDATE Questions SET question_text=$preguntaEditar  WHERE question_id = $idValorSeleccionadoEditar";
-			$consultaRespuesta1 = "UPDATE Options SET option_text=$preguntaEditar  WHERE Questions_question_id = $idValorSeleccionadoEditar";
-			$consultaRespuesta2 = "UPDATE Options SET option_text=$preguntaEditar  WHERE Questions_question_id = $idValorSeleccionadoEditar";
-			$consultaRespuesta3 = "UPDATE Options SET option_text=$preguntaEditar  WHERE Questions_question_id = $idValorSeleccionadoEditar";
-			$consultaRespuesta4 = "UPDATE Options SET option_text=$preguntaEditar  WHERE Questions_question_id = $idValorSeleccionadoEditar";
+
+			$queryOptions = "SELECT * FROM Options";
+			$resultOptions = $conn->query($queryOptions);
+			$antiguaRespuestaCorrecta = "";
+
+			if ($resultQuestions-> num_rows>0) {
+				while ($row = $resultQuestions->fetch_assoc()) {
+					echo "<p>". $row["question_text"] ."</p>";
+					if ($row["question_id"] == $idValorSeleccionadoEditar && $row["correct_answer"] == 1) {
+						$antiguaRespuestaCorrecta = $row["answer_choice"];
+					}
+				}
+			}
+
+			$consultaPregunta = "UPDATE Questions SET question_text='$preguntaEditar'  WHERE question_id=$idValorSeleccionadoEditar";
+			$consultaRespuesta1 = "UPDATE Options SET option_text='$respuestaEditar1'  WHERE Questions_question_id=$idValorSeleccionadoEditar";
+			$consultaRespuesta2 = "UPDATE Options SET option_text='$respuestaEditar2'  WHERE Questions_question_id=$idValorSeleccionadoEditar";
+			$consultaRespuesta3 = "UPDATE Options SET option_text='$respuestaEditar3'  WHERE Questions_question_id=$idValorSeleccionadoEditar";
+			$consultaRespuesta4 = "UPDATE Options SET option_text='$respuestaEditar4'  WHERE Questions_question_id=$idValorSeleccionadoEditar";
+			$consultaRespuestaQuitarAntiguaCorrecta = "UPDATE Options SET correct_answer=0  WHERE Questions_question_id=$idValorSeleccionadoEditar AND answer_choice = '$antiguaRespuestaCorrecta'";
+			$consultaNuevaRespuestaCorrecta = "UPDATE Options SET correct_answer=1  WHERE Questions_question_id=$idValorSeleccionadoEditar AND answer_choice = '$respuestaCorrectaEditar'";
 			
+			$stmt1 = $conn->prepare($consultaPregunta);
+			$stmt2 = $conn->prepare($consultaRespuesta1);
+			$stmt3 = $conn->prepare($consultaRespuesta2);
+			$stmt4 = $conn->prepare($consultaRespuesta3);
+			$stmt5 = $conn->prepare($consultaRespuesta4);
+			$stmt6 = $conn->prepare($consultaRespuestaQuitarAntiguaCorrecta);
+			$stmt7 = $conn->prepare($consultaNuevaRespuestaCorrecta);
+			$stmt1->bind_param("si", $preguntaEditar, $idValorSeleccionadoEditar);
+			$stmt2->bind_param("si", $respuestaEditar1, $idValorSeleccionadoEditar);
+			$stmt3->bind_param("si", $respuestaEditar2, $idValorSeleccionadoEditar);
+			$stmt4->bind_param("si", $respuestaEditar3, $idValorSeleccionadoEditar);
+			$stmt5->bind_param("si", $respuestaEditar4, $idValorSeleccionadoEditar);
+			$stmt6->bind_param("is", $idValorSeleccionadoEditar, $antiguaRespuestaCorrecta);
+			$stmt7->bind_param("is", $idValorSeleccionadoEditar, $respuestaCorrectaEditar);
+
+			if ($stmt1->execute() && $stmt2->execute() && $stmt3->execute() && $stmt4->execute() && $stmt5->execute() && $stmt6->execute() && $stmt7->execute()){
+					echo "<h2>Elemento Actualizado! Refresca la página para ver los cambios</h2>";
+			} else {
+				echo "Error al actualizar1: " . $stmt1->error;
+				echo "Error al actualizar2: " . $stmt2->error;
+				echo "Error al actualizar3: " . $stmt3->error;
+				echo "Error al actualizar4: " . $stmt4->error;
+				echo "Error al actualizar5: " . $stmt5->error;
+				echo "Error al actualizar6: " . $stmt6->error;
+				echo "Error al actualizar7: " . $stmt7->error;
+			}
+			$stmt->close();
 
 
 
 		} else if (isset($_POST["crear"])) {
-			// echo "<h1>Pregunta Creada</h1>";
 			$pregunta = $_POST['pregunta'];
 			$respuesta1 = $_POST['respuesta1'];
 			$respuesta2 = $_POST['respuesta2'];
@@ -460,42 +501,59 @@
 			$solucion4 = 0;
 			if ($respuestaCorrecta === "a") {
 				$solucion1 = 1;
-			} else if ($respuesta2 === "b") {
+			} else if ($respuestaCorrecta === "b") {
 				$solucion2 = 1;
-			} else if ($respuesta3 === "c") {
+			} else if ($respuestaCorrecta === "c") {
 				$solucion3 = 1;
-			} else if ($respuesta3 === "d") {
+			} else if ($respuestaCorrecta === "d") {
 				$solucion4 = 1;
 			}
 
 			$consulta1 = "INSERT INTO Questions (question_type, question_text) 
 										VALUES ('one_choice', ' $pregunta ');";
-			$consulta2 = "INSERT INTO Options (correct_answer, option_type, answer_choice, Questions_question_id, option_text)
-										VALUES ( $solucion1 , 'one_choice', 'a',  $idUltimaPregunta+1 , ' $respuesta1 '),
-													( $solucion2 , 'one_choice', 'b',  $idUltimaPregunta+1 , ' $respuesta2 '),
-													( $solucion3 , 'one_choice', 'c',  $idUltimaPregunta+1 , ' $respuesta3 '),
-													( $solucion4 , 'one_choice', 'd',  $idUltimaPregunta+1 , ' $respuesta4 ');";
-			
+
 			$stmt1 = $conn->prepare($consulta1);
-			$stmt2 = $conn->prepare($consulta2);
 			$stmt1->bind_param("s", $pregunta);
+			if ($stmt1->execute()) {
+				echo "<h2>Elemento creado! Refresca la página para ver los cambios</h2>";
+			} else {
+				echo "Error al insertar pregunta: " . $stmt1->error;
+			}
+			$stmt1->close();
+
+			$queryQuestionsCrear = "SELECT * FROM Questions";
+			$resultQuestionsCrear = $conn->query($queryQuestionsCrear);
+
+			if ($resultQuestionsCrear-> num_rows>0) {
+				while ($row = $resultQuestionsCrear->fetch_assoc()) {
+					if ($row['question_text'] === $pregunta) {
+						echo "<h2>$row[question_id]</h2>";
+						$idUltimaPregunta = $row['question_id'];
+					}
+				}
+			}
+
+			$consulta2 = "INSERT INTO Options (correct_answer, option_type, answer_choice, Questions_question_id, option_text)
+										VALUES ( $solucion1 , 'one_choice', 'a',  $idUltimaPregunta , ' $respuesta1 '),
+													( $solucion2 , 'one_choice', 'b',  $idUltimaPregunta , ' $respuesta2 '),
+													( $solucion3 , 'one_choice', 'c',  $idUltimaPregunta , ' $respuesta3 '),
+													( $solucion4 , 'one_choice', 'd',  $idUltimaPregunta , ' $respuesta4 ');";
+			
+			$stmt2 = $conn->prepare($consulta2);
 			$stmt2->bind_param("iiiiissss", $solucion1, $solucion2, $solucion3, $solucion4, $idUltimaPregunta, $respuesta1, $respuesta2, $respuesta3, $respuesta4);
 
-			if ($stmt1->execute()) {
-					echo "<h2>Elemento creado! Refresca la página para ver los cambios</h2>";
+			if($stmt2->execute()) {
+					// echo "<h2>Elemento creado! Refresca la página para ver los cambios</h2>";
 			} else {
-        echo "Error al insertar opciones: " . $stmt1->error;
-    	}
-			if ($stmt2->execute()) {
-				// echo "Elemento con ID " . $idValorSeleccionado . " eliminado correctamente.";
-			} else {
-        echo "Error al insertar opciones: " . $stmt2->error;
+        echo "Error al insertar opciones2: " . $stmt2->error;
     	}
 
-			$stmt->close();
+			$stmt2->close();
 		}
 	}
 
+	// Cerrar conexión
+	$conn->close();
 	?>
 
 	</body>
