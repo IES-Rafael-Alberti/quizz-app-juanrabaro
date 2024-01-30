@@ -10,10 +10,6 @@
 	<!-- <form method="post" action="process.php"> -->
 	<form method="post">
 		<h1>PHP Quiz PARTE 3</h1>
-		<br>
-		BASICAMENTE HACER OPCIONES PARA CREAR NUEVAS PREGUNTAS, PARA EDITAR LAS PREGUNTAS QUE HAY(ME PARECE QUE ESTA SE VA A QUEDAR AHÍ) Y PARA ELIMINAR PREGUNTAS
-		<br>
-		<br>
 		<?php
 		// Datos de conexión a la base de datos
 		$servername = "db";

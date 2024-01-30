@@ -7,13 +7,67 @@
 	<link rel="stylesheet" href="quiz4.css">
 </head>
 <body>
-	<!-- <form method="post" action="process.php"> -->
+	<!-- <form method="post" action="procesar_registro.php"> -->
+	<form method="post">
+		<h2>Registro de Usuario</h2>
+
+		<label>Usuario:</label>
+		<input name="user">
+
+		<label>Correo Electrónico:</label>
+		<input name="email">
+
+		<label>Contraseña:</label>
+		<input name="password">
+
+		<input type="submit" name="registrar" value="Registrar" />
+	</form>
+	<?php
+		if ($_SERVER["REQUEST_METHOD"] === "POST") {
+			echo "<h2>Información recibida desde PHP</h2>";
+			if (isset($_POST["registrar"])) {
+				echo "<h2>Registrar</h2>";
+				if (empty($_POST['email']) || empty($_POST['password']) || empty($_POST['user'])) {
+					echo "Debes rellenar todos los dos datos.";
+				} else {
+					// foreach ($_POST as $key => $value) {
+					// 	echo "Nombre del campo: " . htmlspecialchars($key) . "<br>";
+					// 	echo "Valor del campo: " . htmlspecialchars($value) . "<br>";
+					// 	echo "<br>";
+					// }
+					$servername = "db";
+					$usernameDB = "root";
+					$passwordDB = "pestillo";
+					$database = "Quiz";
+
+					// Crear conexión
+					$connRegistrar = new mysqli($servername, $usernameDB, $passwordDB, $database);
+					
+					// Verificar la conexión
+					if ($connRegistrar->connect_error) {
+						die("Error de conexión: " . $connRegistrar->connect_error);
+					}
+					
+					$username = $_POST['user'];
+					$email = $_POST['email'];
+					$password = $_POST['password'];
+					$consultaRegistrar = "INSERT INTO User (username, password, email) VALUES ('$username', '$password', '$email')";
+
+					$stmtRegistrar = $connRegistrar->prepare($consultaRegistrar);
+					$stmtRegistrar->bind_param("sss", $username, $password, $email);
+
+					if ($stmtRegistrar->execute()) {
+						echo "<h2>Usuario registrado correctamente</h2>";
+					} else {
+						echo "Error al registrar usuario: " . $stmtRegistrar->error;
+					}
+				}
+			}
+		}
+	?>
+
 	<form method="post">
 		<h1>PHP Quiz PARTE 4</h1>
-		<br>
-		BASICAMENTE HACER OPCIONES PARA CREAR NUEVAS PREGUNTAS, PARA EDITAR LAS PREGUNTAS QUE HAY(ME PARECE QUE ESTA SE VA A QUEDAR AHÍ) Y PARA ELIMINAR PREGUNTAS
-		<br>
-		<br>
 		<?php
 		// Datos de conexión a la base de datos
 		$servername = "db";
@@ -55,9 +109,6 @@
 					}
 					$div .= "<label><input type='radio' name='q$titleCount' value='$row[answer_choice]'> ".$row["answer_choice"].") ". $row["option_text"] ."</label>";
 					$count++;
-					// if ($count === 5) {
-					// 	$div .= "<button id='$idQuestion' name='eliminar' onclick='eliminarRegistro(this.id)'>❌</button>";
-					// }
 				}
 				$div .= "</div>";
 				echo $div;
@@ -158,23 +209,6 @@
 
 	
 	if ($_SERVER["REQUEST_METHOD"] == "POST") {
-		// if (isset($_POST["eliminar"])) {
-		// 	// $idDelBoton = $_POST["idDelBoton"];
-		// 	foreach ($_POST as $key => $value) {
-		// 		echo "Nombre del campo: " . htmlspecialchars($key) . "<br>";
-		// 		echo "Valor del campo: " . htmlspecialchars($value) . "<br>";
-		// 		echo "<br>";
-		// }
-		// 	echo "ID recibido: " . $idDelBoton;
-			// $sql = "DELETE FROM Options WHERE Questions_question_id = $idDelBoton";
-			// $sql = "DELETE FROM Questions WHERE question_id = $idDelBoton";
-
-			// if ($conn->query($sql) === TRUE) {
-			// 		echo "Registro eliminado correctamente.";
-			// } else {
-			// 		echo "Error al eliminar el registro: " . $conn->error;
-			// }
-			// } else {
 		if (isset($_POST["resultado"])) {
 
 			$qNoResponded = [];
