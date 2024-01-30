@@ -50,3 +50,12 @@ input[type="submit"] {
 input[type="submit"]:hover {
     background-color: #0056b3;
 }
+
+.cerrar-sesion {
+    background-color: #0056b3;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}

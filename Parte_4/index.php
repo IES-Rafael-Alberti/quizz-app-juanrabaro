@@ -7,6 +7,19 @@
 	<link rel="stylesheet" href="quiz4.css">
 </head>
 <body>
+<?php
+		session_start();
+		if (isset($_SESSION['user_username'])) {
+			echo "<h2>Hola ". $_SESSION['user_username'] ."!</h2>";
+			echo "<a href='?cerrar=true' class='cerrar-sesion'>Cerrar sesión</a>";
+		}
+		if (isset($_GET["cerrar"])) {
+				$_SESSION = array();
+				session_destroy();
+				header("Location: index.php"); // Redirige al usuario a la página de inicio después de cerrar la sesión
+				exit;
+		}
+	?>
 	<!-- <form method="post" action="procesar_registro.php"> -->
 	<form method="post">
 		<h2>Registro de Usuario</h2>
@@ -24,17 +37,10 @@
 	</form>
 	<?php
 		if ($_SERVER["REQUEST_METHOD"] === "POST") {
-			echo "<h2>Información recibida desde PHP</h2>";
 			if (isset($_POST["registrar"])) {
-				echo "<h2>Registrar</h2>";
 				if (empty($_POST['email']) || empty($_POST['password']) || empty($_POST['user'])) {
-					echo "Debes rellenar todos los dos datos.";
+					echo "Debes rellenar todos los datos.";
 				} else {
-					// foreach ($_POST as $key => $value) {
-					// 	echo "Nombre del campo: " . htmlspecialchars($key) . "<br>";
-					// 	echo "Valor del campo: " . htmlspecialchars($value) . "<br>";
-					// 	echo "<br>";
-					// }
 					$servername = "db";
 					$usernameDB = "root";
 					$passwordDB = "pestillo";
@@ -60,6 +66,65 @@
 						echo "<h2>Usuario registrado correctamente</h2>";
 					} else {
 						echo "Error al registrar usuario: " . $stmtRegistrar->error;
+					}
+				}
+			}
+		}
+	?>
+
+	<form method="post">
+		<h2>Iniciar Sesión</h2>
+
+		<label>Correo Electrónico:</label>
+		<input name="email">
+
+		<label>Contraseña:</label>
+		<input name="password">
+
+		<input type="submit" name="iniciar" value="Iniciar Sesión" />
+	</form>
+	<?php
+		if ($_SERVER["REQUEST_METHOD"] === "POST") {
+			// echo "<h2>Información recibida desde PHP</h2>";
+			if (isset($_POST["iniciar"])) {
+				// echo "<h2>Iniciar</h2>";
+				if (empty($_POST['email']) || empty($_POST['password'])) {
+					echo "Debes rellenar todos los datos.";
+				} else {
+					$servername = "db";
+					$usernameDB = "root";
+					$passwordDB = "pestillo";
+					$database = "Quiz";
+
+					// Crear conexión
+					$connIniciar = new mysqli($servername, $usernameDB, $passwordDB, $database);
+					
+					// Verificar la conexión
+					if ($connIniciar->connect_error) {
+						die("Error de conexión: " . $connIniciar->connect_error);
+					}
+					
+					$email = $_POST['email'];
+					$password = $_POST['password'];
+					$consultaIniciar = "SELECT * FROM User WHERE email = '$email' AND password = '$password'";
+
+					if ($result = $connIniciar->query($consultaIniciar)) {
+						if ($result->num_rows > 0) {
+							$stmtIniciar = $connIniciar->prepare($consultaIniciar);
+							$stmtIniciar->bind_param("ss", $password, $email);
+		
+							if ($stmtIniciar->execute()) {
+								$username = $result->fetch_assoc()['username'];
+								echo "<h2>Has iniciado sesión correctamente, actualiza la página para ver la sesión activa</h2>";
+								$_SESSION['user_username'] = $username;
+							} else {
+								echo "Error al registrar usuario: " . $stmtIniciar->error;
+							}
+						} else {
+							echo "<h2>Usuario no encontrado</h2>";
+						}
+					} else {
+						echo "Error al buscar usuario: " . $connIniciar->error;
 					}
 				}
 			}
